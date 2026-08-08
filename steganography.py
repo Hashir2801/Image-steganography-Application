@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import io
 import numpy as np
 import streamlit as st
@@ -342,4 +341,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SteganographyApp(root)
     root.mainloop()
->>>>>>> d7c326667d370e928cdbf131de5ec7ffa6b54133
