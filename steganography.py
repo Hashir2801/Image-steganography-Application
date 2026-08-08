@@ -59,7 +59,7 @@ with encode_tab:
         )
         if uploaded_image is not None:
             source_image = Image.open(uploaded_image)
-            st.image(source_image, caption=uploaded_image.name, use_column_width=True)
+            st.image(source_image, caption=uploaded_image.name, width="stretch")
 
     with right:
         secret_text = st.text_area(
@@ -81,7 +81,7 @@ with encode_tab:
                     buffer.seek(0)
 
                     st.success("Secret message encoded successfully.")
-                    st.image(encoded_image, caption="Encoded Image", use_column_width=True)
+                    st.image(encoded_image, caption="Encoded Image", width="stretch")
                     st.download_button(
                         "Download Encoded Image",
                         data=buffer,
@@ -101,7 +101,7 @@ with decode_tab:
         )
         if encoded_upload is not None:
             decode_image = Image.open(encoded_upload)
-            st.image(decode_image, caption=encoded_upload.name, use_column_width=True)
+            st.image(decode_image, caption=encoded_upload.name, width="stretch")
 
     with right:
         if st.button("Decode Message"):
