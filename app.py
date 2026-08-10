@@ -1,12 +1,10 @@
 import io
 import base64
 import numpy as np
-from flask import Flask, request, render_template_string, send_file
+from flask import Flask, request, render_template_string
 from PIL import Image
 
 app = Flask(__name__)
-LAST_ENCODED = None
-
 def text_to_binary(text):
     return ''.join(format(byte, '08b') for byte in text.encode('utf-8'))
 
@@ -68,7 +66,7 @@ footer{border-top:1px solid #30343d;margin-top:42px;padding-top:25px;color:#999}
 <div class="card"><label>Choose an image</label><input type="file" name="image" accept=".png,.jpg,.jpeg,.bmp" required></div>
 <div class="card"><label>Secret Message</label><textarea name="message" placeholder="Type the message you want to hide..." required></textarea><button class="btn">Encode Message</button></div>
 </div></form>
-{% if encoded_preview %}<div class="card" style="margin-top:28px"><label>Encoded Image</label><img class="preview" src="{{ encoded_preview }}"><br><a href="/download"><button class="btn">Download Encoded Image</button></a></div>{% endif %}
+{% if encoded_preview %}<div class="card" style="margin-top:28px"><label>Encoded Image</label><img class="preview" src="{{ encoded_preview }}"><br><a href="{{ download_data }}" download="encoded_image.png"><button type="button" class="btn">Download Encoded Image</button></a></div>{% endif %}
 {% else %}
 <form method="post" enctype="multipart/form-data"><div class="grid">
 <div class="card"><label>Choose an encoded image</label><input type="file" name="image" accept=".png,.jpg,.jpeg,.bmp" required></div>
@@ -81,8 +79,7 @@ footer{border-top:1px solid #30343d;margin-top:42px;padding-top:25px;color:#999}
 
 @app.route('/', methods=['GET','POST'])
 def home():
-    global LAST_ENCODED
-    error = success = preview = None
+    error = success = preview = download_data = None
     if request.method == 'POST':
         f = request.files.get('image')
         message = request.form.get('message','').strip()
@@ -93,12 +90,22 @@ def home():
                 encoded = encode_message(Image.open(f.stream), message)
                 b = io.BytesIO()
                 encoded.save(b, format='PNG')
-                LAST_ENCODED = b.getvalue()
-                preview = 'data:image/png;base64,' + base64.b64encode(LAST_ENCODED).decode('ascii')
+                encoded_bytes = b.getvalue()
+                encoded_b64 = base64.b64encode(encoded_bytes).decode('ascii')
+                preview = 'data:image/png;base64,' + encoded_b64
+                download_data = preview
                 success = 'Secret message encoded successfully.'
             except Exception as e:
                 error = str(e)
-    return render_template_string(HTML, tab='encode', error=error, success=success, encoded_preview=preview, decoded_text=None)
+    return render_template_string(
+        HTML,
+        tab='encode',
+        error=error,
+        success=success,
+        encoded_preview=preview,
+        download_data=download_data,
+        decoded_text=None
+    )
 
 @app.route('/decode', methods=['GET','POST'])
 def decode():
@@ -114,13 +121,15 @@ def decode():
                 success = 'Message decoded successfully.'
         except Exception as e:
             error = str(e)
-    return render_template_string(HTML, tab='decode', error=error, success=success, encoded_preview=None, decoded_text=decoded_text)
-
-@app.route('/download')
-def download():
-    if not LAST_ENCODED:
-        return 'No encoded image is available. Encode an image first.', 404
-    return send_file(io.BytesIO(LAST_ENCODED), mimetype='image/png', as_attachment=True, download_name='encoded_image.png')
+    return render_template_string(
+        HTML,
+        tab='decode',
+        error=error,
+        success=success,
+        encoded_preview=None,
+        download_data=None,
+        decoded_text=decoded_text
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
