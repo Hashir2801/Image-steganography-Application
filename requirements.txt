@@ -1,3 +1,1 @@
-streamlit
-pillow
-numpy
+Flask==3.1.2\nPillow==11.3.0\nnumpy==2.3.2\n
