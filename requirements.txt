@@ -1,1 +1,3 @@
-Flask==3.1.2\nPillow==11.3.0\nnumpy==2.3.2\n
+Flask==3.1.2
+Pillow==11.3.0
+numpy==2.3.2
